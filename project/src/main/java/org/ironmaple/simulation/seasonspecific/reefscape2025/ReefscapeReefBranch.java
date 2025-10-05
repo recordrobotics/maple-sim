@@ -13,6 +13,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Arrays;
 import java.util.List;
+import org.dyn4j.geometry.Vector2;
 import org.ironmaple.simulation.Goal;
 import org.ironmaple.simulation.gamepieces.GamePiece;
 import org.ironmaple.utils.FieldMirroringUtils;
@@ -108,9 +109,9 @@ public class ReefscapeReefBranch extends Goal {
     public ReefscapeReefBranch(Arena2025Reefscape arena, boolean isBlue, int level, int column) {
         super(
                 arena,
-                level == 0 ? Centimeters.of(30) : Centimeters.of(10),
-                level == 0 ? Centimeters.of(100) : Centimeters.of(10),
-                Centimeters.of(30),
+                level == 0 ? Centimeters.of(30) : Centimeters.of(30),
+                level == 0 ? Centimeters.of(40) : Centimeters.of(30),
+                level == 0 ? Centimeters.of(20) : Centimeters.of(30),
                 "Coral",
                 getPoseOfBranchAt(isBlue, level, column),
                 isBlue,
@@ -120,15 +121,15 @@ public class ReefscapeReefBranch extends Goal {
             if (isBlue) {
                 setNeededAngle(
                         new Rotation3d(0, -35 * Math.PI / 180, branchesFacingOutwardsBlue[column].getRadians()),
-                        Degrees.of(10));
+                        Degrees.of(60));
             } else {
                 setNeededAngle(
                         new Rotation3d(0, -35 * Math.PI / 180, branchesFacingOutwardsRed[column].getRadians()),
-                        Degrees.of(10));
+                        Degrees.of(60));
             }
         } else if (level == 3) {
             setNeededAngle(
-                    new Rotation3d(0, -Math.PI / 2, branchesFacingOutwardsRed[column].getRadians()), Degrees.of(10));
+                    new Rotation3d(0, -Math.PI / 2, branchesFacingOutwardsRed[column].getRadians()), Degrees.of(60));
         }
         this.level = level;
         this.column = column;
@@ -151,16 +152,15 @@ public class ReefscapeReefBranch extends Goal {
 
     @Override
     public boolean checkRotation(GamePiece gamePiece) {
-        if (level == 3) {
-            Rotation3d rotation = gamePiece.getPose3d().getRotation();
-            System.out.println(Math.abs(rotation.getY() + Math.PI / 2));
-            System.out.println(Math.abs(rotation.getY() - Math.PI / 2));
+        return true;
+    }
 
-            return Math.abs(rotation.getY() + Math.PI / 2) < Degrees.of(10).in(Units.Radians)
-                    || Math.abs(rotation.getY() - Math.PI / 2) < Degrees.of(10).in(Units.Radians);
-        } else {
-            return super.checkRotation(gamePiece);
-        }
+    @Override
+    public boolean checkCollision(GamePiece gamePiece) {
+        return xyBox.contains(new Vector2(
+                        gamePiece.getPose3d().getX(), gamePiece.getPose3d().getY()))
+                && gamePiece.getPose3d().getZ() >= (elevation.in(Units.Meters) - 0.02)
+                && gamePiece.getPose3d().getZ() <= elevation.in(Units.Meters) + height.in(Units.Meters);
     }
 
     @Override
