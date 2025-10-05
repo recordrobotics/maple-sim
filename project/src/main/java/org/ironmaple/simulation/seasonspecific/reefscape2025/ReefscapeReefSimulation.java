@@ -3,8 +3,10 @@ package org.ironmaple.simulation.seasonspecific.reefscape2025;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.ironmaple.simulation.Goal;
 import org.ironmaple.simulation.SimulatedArena;
 
@@ -18,7 +20,7 @@ import org.ironmaple.simulation.SimulatedArena;
  * this class behaves and can be used like a normal goal.
  */
 public class ReefscapeReefSimulation implements SimulatedArena.Simulatable {
-    protected final List<ReefscapeReefBranch> branches;
+    protected final HashMap<String, ReefscapeReefBranch> branches;
     public ReefscapeAlgaeOnField algae;
     private StructArrayPublisher<Pose3d> reefPub;
     Pose3d[] branchPoses;
@@ -32,12 +34,15 @@ public class ReefscapeReefSimulation implements SimulatedArena.Simulatable {
      * @param isBlue Wether this is the blue reef or the red one.
      */
     ReefscapeReefSimulation(Arena2025Reefscape arena, boolean isBlue) {
-        branches = new ArrayList<ReefscapeReefBranch>(48);
+        branches = new HashMap<String, ReefscapeReefBranch>(48);
         branchPoses = new Pose3d[96];
         for (int tower = 0; tower < 12; tower++) {
             for (int level = 0; level < 4; level++) {
-                branches.add(new ReefscapeReefBranch(arena, isBlue, level, tower));
-                Pose3d tempPose = branches.get(branches.size() - 1).getPose();
+                char towerChar = (char) ('A' + tower);
+                char levelChar = (char) ('1' + level);
+                ReefscapeReefBranch branch = new ReefscapeReefBranch(arena, isBlue, level, tower);
+                branches.put(String.valueOf(towerChar) + String.valueOf(levelChar), branch);
+                Pose3d tempPose = branch.getPose();
 
                 branchPoses[2 * (tower * 4 + level)] = tempPose;
 
@@ -53,14 +58,14 @@ public class ReefscapeReefSimulation implements SimulatedArena.Simulatable {
     }
 
     public void draw(List<Pose3d> coralPosesToDisplay) {
-        for (ReefscapeReefBranch branch : branches) {
+        for (ReefscapeReefBranch branch : branches.values()) {
             branch.draw(coralPosesToDisplay);
         }
     }
 
     @Override
     public void simulationSubTick(int subTickNum) {
-        for (ReefscapeReefBranch branch : branches) {
+        for (ReefscapeReefBranch branch : branches.values()) {
             branch.simulationSubTick(subTickNum);
         }
     }
@@ -71,9 +76,37 @@ public class ReefscapeReefSimulation implements SimulatedArena.Simulatable {
      * <h2>Resets the reef to its original state.</h2>
      */
     public void clearReef() {
-        for (ReefscapeReefBranch branch : branches) {
+        for (ReefscapeReefBranch branch : branches.values()) {
             branch.clear();
         }
+    }
+
+    /**
+     * Obtains a specific branch based on its ID.
+     *
+     * <p>The ID is a combination of the branch letter (A-L) and the level number (1-4).
+     *
+     * <p>For example, "A1" refers to the first level of branch A, while "L4" refers to the fourth level of branch L.
+     *
+     * @param id the ID of the branch to retrieve (e.g., "A1", "B2", ..., "L4")
+     * @return the {@link ReefscapeReefBranch} corresponding to the given ID, or null if the ID is invalid
+     */
+    public ReefscapeReefBranch getBranch(String id) {
+        return branches.get(id);
+    }
+
+    /**
+     * Obtains the set of all branches in the reef through a set of map entries (ID -> {@link ReefscapeReefBranch}).
+     *
+     * <p>The ID is a combination of the branch letter (A-L) and the level number (1-4).
+     *
+     * <p>For example, "A1" refers to the first level of branch A, while "L4" refers to the fourth level of branch L.
+     *
+     * @return a set of map entries where each entry consists of a branch ID and its corresponding
+     *     {@link ReefscapeReefBranch}
+     */
+    public Set<Map.Entry<String, ReefscapeReefBranch>> getBranchesSet() {
+        return branches.entrySet();
     }
 
     /**
@@ -97,7 +130,7 @@ public class ReefscapeReefSimulation implements SimulatedArena.Simulatable {
      */
     public int[][] getBranches() {
         int[][] toReturn = new int[12][4];
-        for (ReefscapeReefBranch branch : branches) {
+        for (ReefscapeReefBranch branch : branches.values()) {
             toReturn[branch.column][branch.level] = branch.getGamePieceCount();
         }
         return toReturn;
