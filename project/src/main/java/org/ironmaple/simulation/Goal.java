@@ -34,6 +34,8 @@ public abstract class Goal implements SimulatedArena.Simulatable {
     protected Rotation3d pieceAngle = null;
     protected Angle pieceAngleTolerance = Angle.ofBaseUnits(15, Units.Degrees);
 
+    private Runnable onGamePieceCountChanged = () -> {};
+
     /**
      *
      *
@@ -121,6 +123,7 @@ public abstract class Goal implements SimulatedArena.Simulatable {
             if (gamePieceCount != max && !toRemove.contains(gamePiece) && this.checkValidity(gamePiece)) {
                 gamePieceCount++;
                 this.addPoints();
+                onGamePieceCountChanged.run();
                 toRemove.add(gamePiece);
             }
         }
@@ -246,6 +249,7 @@ public abstract class Goal implements SimulatedArena.Simulatable {
      */
     public void clear() {
         this.gamePieceCount = 0;
+        onGamePieceCountChanged.run();
     }
 
     /**
@@ -288,5 +292,16 @@ public abstract class Goal implements SimulatedArena.Simulatable {
      */
     public int getGamePieceCount() {
         return gamePieceCount;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets a runnable to be called when game piece count is changed.</h2>
+     *
+     * @param onGamePieceCountChanged The runnable to be called when game piece count is changed.
+     */
+    public void setOnGamePieceCountChanged(Runnable onGamePieceCountChanged) {
+        this.onGamePieceCountChanged = onGamePieceCountChanged;
     }
 }
