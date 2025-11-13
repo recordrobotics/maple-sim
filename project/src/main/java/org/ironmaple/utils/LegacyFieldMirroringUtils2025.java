@@ -7,9 +7,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Optional;
 
-public class FieldMirroringUtils {
-    public static final double FIELD_WIDTH = 16.4592;
-    public static final double FIELD_HEIGHT = 8.2296;
+public class LegacyFieldMirroringUtils2025 {
+    public static final double FIELD_WIDTH = 17.548;
+    public static final double FIELD_HEIGHT = 8.052;
 
     public static Rotation2d toCurrentAllianceRotation(Rotation2d rotationAtBlueSide) {
         return isSidePresentedAsRed() ? flip(rotationAtBlueSide) : rotationAtBlueSide;
@@ -24,7 +24,7 @@ public class FieldMirroringUtils {
     }
 
     public static Translation2d flip(Translation2d translation) {
-        return new Translation2d(FIELD_WIDTH - translation.getX(), translation.getY());
+        return new Translation2d(FIELD_WIDTH - translation.getX(), FIELD_HEIGHT - translation.getY());
     }
 
     public static Translation3d toCurrentAllianceTranslation(Translation3d translation3dAtBlueSide) {
