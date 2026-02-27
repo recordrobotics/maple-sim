@@ -14,6 +14,9 @@ ext.wpilibVersion = "2026.2.1"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://isaac-dot-py.github.io/rapier-java")
+    }
 }
 
 if (project.hasProperty('releaseMode')) {
@@ -52,6 +55,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:2.15.2"
     implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
     implementation 'edu.wpi.first.thirdparty.frc2024.opencv:opencv-java:4.8.0-2'
+    implementation 'com.rapier:rapier-java:1.0'
 }
 
 // Set up exports properly
