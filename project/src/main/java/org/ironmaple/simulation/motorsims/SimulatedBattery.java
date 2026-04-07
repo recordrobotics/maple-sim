@@ -1,19 +1,23 @@
 package org.ironmaple.simulation.motorsims;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.SimulatedArena;
 
 /**
  *
@@ -25,15 +29,117 @@ import java.util.function.Supplier;
  */
 public class SimulatedBattery {
     // Nominal voltage for a fully charged battery (13.5 volts).
-    private static final double BATTERY_NOMINAL_VOLTAGE = 13.5;
+    private static final double DEFAULT_BATTERY_NOMINAL_VOLTAGE = 13.5;
 
     // Filter to smooth the current readings.
-    private static final LinearFilter currentFilter = LinearFilter.movingAverage(50);
+    private static LinearFilter currentFilter = LinearFilter.movingAverage(50);
 
     private static final List<Supplier<Current>> electricalAppliances = new ArrayList<>();
 
     // The current battery voltage in volts.
-    private static double batteryVoltageVolts = BATTERY_NOMINAL_VOLTAGE;
+    private static double currentChargeVoltage = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
+    private static double batteryVoltageVolts = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
+    private static double batteryInternalResistance = 0.02;
+
+    private static double timeOfLastVoltageLow = -1;
+    private static double voltageSagThreshold = 0.95;
+    private static Pair<Double, Double> voltageSagCoefficients = new Pair<>(1.70518, 2.81719);
+
+    private static double dischargeRate = 0.05 / 378.45; // Volts per amp-second
+    private static Pair<Double, Double> dischargeCoefficients = new Pair<>(13.48393, 1.34388);
+
+    /**
+     *
+     *
+     * <h2>Sets the current filter for the battery simulation.</h2>
+     *
+     * <p>By default a moving average filter with 50 samples is used
+     *
+     * @param filter The filter to smooth the current readings
+     */
+    public static void setCurrentFilter(LinearFilter filter) {
+        currentFilter = filter;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the current charge voltage of the battery.</h2>
+     *
+     * <p>This method can be used to set an initial voltage for the simulation.
+     *
+     * @param voltage The voltage to set the battery to, in volts.
+     */
+    public static void setVoltage(double voltage) {
+        currentChargeVoltage = voltage;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the internal resistance of the battery.</h2>
+     *
+     * @param resistance The internal resistance to set, in ohms.
+     */
+    public static void setBatteryInternalResistance(double resistance) {
+        batteryInternalResistance = resistance;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the voltage sag threshold for the battery simulation.</h2>
+     *
+     * <blockquote>
+     *
+     * <p>The voltage sag threshold is the ratio of the loaded battery voltage to the current charge voltage below which
+     * the battery is considered to be in a voltage sag condition. For example, a threshold of 0.95 means that if the
+     * loaded battery voltage drops below 95% of the current charge voltage, it will be considered a voltage sag.
+     *
+     * </blockquote>
+     *
+     * @param threshold The voltage sag threshold to set.
+     */
+    public static void setVoltageSagThreshold(double threshold) {
+        voltageSagThreshold = threshold;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the voltage sag coefficients (positive) for the battery simulation.</h2>
+     *
+     * <p>The voltage sag is calculated using the formula: coefficient1 / (timeSinceVoltageLow + coefficient2).
+     *
+     * @param coefficients The voltage sag coefficients to set.
+     */
+    public static void setVoltageSagCoefficients(Pair<Double, Double> coefficients) {
+        voltageSagCoefficients = coefficients;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the discharge rate for the battery simulation in volts per amp-second.</h2>
+     *
+     * @param rate The discharge rate to set.
+     */
+    public static void setDischargeRate(double rate) {
+        dischargeRate = rate;
+    }
+
+    /**
+     *
+     *
+     * <h2>Sets the discharge coefficients for the battery simulation.</h2>
+     *
+     * <p>The discharge fraction is calculated using the formula: 1 / (voltage - coefficient1) + coefficient2.
+     *
+     * @param coefficients The discharge coefficients to set.
+     */
+    public static void setDischargeCoefficients(Pair<Double, Double> coefficients) {
+        dischargeCoefficients = coefficients;
+    }
 
     /**
      *
@@ -72,9 +178,23 @@ public class SimulatedBattery {
      */
     public static void simulationSubTick() {
         double totalCurrentAmps = getTotalCurrentDrawn().in(Amps);
-        totalCurrentAmps = currentFilter.calculate(totalCurrentAmps);
+        double filteredTotalCurrentAmps = currentFilter.calculate(totalCurrentAmps);
 
-        batteryVoltageVolts = BatterySim.calculateLoadedBatteryVoltage(BATTERY_NOMINAL_VOLTAGE, 0.02, totalCurrentAmps);
+        // Discharge
+        currentChargeVoltage = MathUtil.clamp(
+                currentChargeVoltage
+                        - dischargeRate
+                                * Math.max(
+                                        0.1,
+                                        1 / (currentChargeVoltage - dischargeCoefficients.getFirst())
+                                                + dischargeCoefficients.getSecond())
+                                * totalCurrentAmps
+                                * SimulatedArena.getSimulationDt().in(Seconds),
+                RoboRioSim.getBrownoutVoltage(),
+                DEFAULT_BATTERY_NOMINAL_VOLTAGE);
+
+        batteryVoltageVolts = BatterySim.calculateLoadedBatteryVoltage(
+                currentChargeVoltage - calculateVoltageSag(), batteryInternalResistance, filteredTotalCurrentAmps);
 
         if (Double.isNaN(batteryVoltageVolts)) {
             batteryVoltageVolts = 12.0;
@@ -88,10 +208,23 @@ public class SimulatedBattery {
             DriverStation.reportError("[MapleSim] BrownOut Detected, protecting battery voltage...", false);
         }
 
+        if (batteryVoltageVolts / currentChargeVoltage < voltageSagThreshold) {
+            timeOfLastVoltageLow = Timer.getTimestamp();
+        }
+
         RoboRioSim.setVInVoltage(batteryVoltageVolts);
 
-        SmartDashboard.putNumber("BatterySim/TotalCurrent (Amps)", totalCurrentAmps);
+        SmartDashboard.putNumber("BatterySim/TotalCurrent (Amps)", filteredTotalCurrentAmps);
         SmartDashboard.putNumber("BatterySim/BatteryVoltage (Volts)", batteryVoltageVolts);
+    }
+
+    private static double calculateVoltageSag() {
+        if (timeOfLastVoltageLow < 0) {
+            return 0;
+        } else {
+            double timeSinceVoltageLow = Timer.getTimestamp() - timeOfLastVoltageLow;
+            return voltageSagCoefficients.getFirst() / (timeSinceVoltageLow + voltageSagCoefficients.getSecond());
+        }
     }
 
     /**
