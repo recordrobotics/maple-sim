@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Optional;
 
 public class FieldMirroringUtils {
-    public static final double FIELD_WIDTH = 17.548;
-    public static final double FIELD_HEIGHT = 8.052;
+    public static final double FIELD_WIDTH = 16.54105;
+    public static final double FIELD_HEIGHT = 8.06926;
 
     public static Rotation2d toCurrentAllianceRotation(Rotation2d rotationAtBlueSide) {
         return isSidePresentedAsRed() ? flip(rotationAtBlueSide) : rotationAtBlueSide;
