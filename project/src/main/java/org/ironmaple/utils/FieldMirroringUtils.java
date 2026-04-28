@@ -21,6 +21,10 @@ public class FieldMirroringUtils {
         return rotation.plus(Rotation2d.k180deg);
     }
 
+    public static Rotation3d flip(Rotation3d rotation) {
+        return rotation.plus(new Rotation3d(Rotation2d.k180deg));
+    }
+
     public static Translation2d toCurrentAllianceTranslation(Translation2d translationAtBlueSide) {
         return isSidePresentedAsRed() ? flip(translationAtBlueSide) : translationAtBlueSide;
     }
@@ -32,7 +36,7 @@ public class FieldMirroringUtils {
     public static Pose3d flip(Pose3d toFlip) {
         return new Pose3d(
                 new Translation3d(FIELD_WIDTH - toFlip.getX(), FIELD_HEIGHT - toFlip.getY(), toFlip.getZ()),
-                toFlip.getRotation().plus(new Rotation3d(Rotation2d.k180deg)));
+                flip(toFlip.getRotation()));
     }
 
     public static Translation3d toCurrentAllianceTranslation(Translation3d translation3dAtBlueSide) {
