@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
 public class COTS {
     /**
@@ -48,7 +49,11 @@ public class COTS {
      * Swerve Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofMark4(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -64,7 +69,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -72,7 +78,11 @@ public class COTS {
      * Mark4-i Swerve Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofMark4i(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -88,7 +98,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -96,7 +107,11 @@ public class COTS {
      * Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofMark4n(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -111,7 +126,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -119,7 +135,11 @@ public class COTS {
      * Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofMark5n(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -134,7 +154,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -142,7 +163,11 @@ public class COTS {
      * Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofMark5i(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -157,7 +182,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -165,7 +191,12 @@ public class COTS {
      * for simulation
      */
     public static SwerveModuleSimulationConfig ofSwerveX(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel, double firstStageRatio) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            double firstStageRatio,
+            SimulatedBattery batterySource) {
         double secondStageRatio =
                 switch (gearRatioLevel) {
                     case 1 -> 26.0 / 20.0;
@@ -181,7 +212,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -193,7 +225,12 @@ public class COTS {
      * X3 Ratios are gearRatioLevel 7-9
      */
     public static SwerveModuleSimulationConfig ofSwerveXFlipped(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel, int pinionSize) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            int pinionSize,
+            SimulatedBattery batterySource) {
         var unknownPinionErr = new IllegalStateException("Unknown pinion size: " + pinionSize);
         var unknownLevelErr = new IllegalStateException("Unknown gearing level: " + gearRatioLevel);
         return new SwerveModuleSimulationConfig(
@@ -225,7 +262,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -233,7 +271,12 @@ public class COTS {
      * Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofSwerveXS(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel, int pinionSize) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            int pinionSize,
+            SimulatedBattery batterySource) {
         var unknownPinionErr = new IllegalStateException("Unknown pinion size: " + pinionSize);
         var unknownLevelErr = new IllegalStateException("Unknown gearing level: " + gearRatioLevel);
         return new SwerveModuleSimulationConfig(
@@ -259,7 +302,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -272,7 +316,12 @@ public class COTS {
      * X4 Ratios are gearRatioLevel 10-12
      */
     public static SwerveModuleSimulationConfig ofSwerveX2(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel, int pinionSize) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            int pinionSize,
+            SimulatedBattery batterySource) {
         var unknownPinionErr = new IllegalStateException("Unknown pinion size: " + pinionSize);
         var unknownLevelErr = new IllegalStateException("Unknown gearing level: " + gearRatioLevel);
         return new SwerveModuleSimulationConfig(
@@ -310,7 +359,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -318,7 +368,12 @@ public class COTS {
      * Module</a> for simulation
      */
     public static SwerveModuleSimulationConfig ofSwerveX2S(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel, int pinionSize) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            int pinionSize,
+            SimulatedBattery batterySource) {
         var unknownPinionErr = new IllegalStateException("Unknown pinion size: " + pinionSize);
         var unknownLevelErr = new IllegalStateException("Unknown gearing level: " + gearRatioLevel);
         return new SwerveModuleSimulationConfig(
@@ -350,7 +405,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -360,7 +416,11 @@ public class COTS {
      * Gear Ratio Upgrade Kit ratios are gearRatioLevel 4-8
      */
     public static SwerveModuleSimulationConfig ofMAXSwerve(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -380,7 +440,8 @@ public class COTS {
                 Volts.of(0.1),
                 Inches.of(1.5),
                 KilogramSquareMeters.of(0.02),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**
@@ -388,7 +449,11 @@ public class COTS {
      * for simulation
      */
     public static SwerveModuleSimulationConfig ofThriftySwerve(
-            DCMotor driveMotor, DCMotor steerMotor, double wheelCOF, int gearRatioLevel) {
+            DCMotor driveMotor,
+            DCMotor steerMotor,
+            double wheelCOF,
+            int gearRatioLevel,
+            SimulatedBattery batterySource) {
         return new SwerveModuleSimulationConfig(
                 driveMotor,
                 steerMotor,
@@ -406,7 +471,8 @@ public class COTS {
                 Volts.of(0.2),
                 Inches.of(2),
                 KilogramSquareMeters.of(0.03),
-                wheelCOF);
+                wheelCOF,
+                batterySource);
     }
 
     /**

@@ -39,6 +39,7 @@ public final class SimMotorConfigs {
     public final double gearing;
     public final MomentOfInertia loadMOI;
     public final Torque friction;
+    public final SimulatedBattery batterySource;
 
     protected Angle forwardHardwareLimit, reverseHardwareLimit;
 
@@ -55,11 +56,17 @@ public final class SimMotorConfigs {
      * @param loadMOI the moment of inertia of the load connected to the motor, representing rotational resistance.
      * @param frictionVoltage the voltage applied to simulate frictional torque losses in the motor.
      */
-    public SimMotorConfigs(DCMotor motor, double gearing, MomentOfInertia loadMOI, Voltage frictionVoltage) {
+    public SimMotorConfigs(
+            DCMotor motor,
+            double gearing,
+            MomentOfInertia loadMOI,
+            Voltage frictionVoltage,
+            SimulatedBattery batterySource) {
         this.motor = motor;
         this.gearing = gearing;
         this.loadMOI = loadMOI;
         this.friction = NewtonMeters.of(motor.getTorque(motor.getCurrent(0, frictionVoltage.in(Volts))));
+        this.batterySource = batterySource;
 
         forwardHardwareLimit = Radians.of(Double.POSITIVE_INFINITY);
         reverseHardwareLimit = Radians.of(-Double.POSITIVE_INFINITY);
@@ -186,7 +193,11 @@ public final class SimMotorConfigs {
     @Override
     protected SimMotorConfigs clone() {
         SimMotorConfigs cfg = new SimMotorConfigs(
-                        motor, gearing, loadMOI, Volts.of(motor.getVoltage(friction.in(NewtonMeter), 0.0)))
+                        motor,
+                        gearing,
+                        loadMOI,
+                        Volts.of(motor.getVoltage(friction.in(NewtonMeter), 0.0)),
+                        batterySource)
                 .withHardLimits(forwardHardwareLimit, reverseHardwareLimit);
 
         return cfg;

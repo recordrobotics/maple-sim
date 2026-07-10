@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimMotorConfigs;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
 public class SwerveModuleSimulationConfig implements Supplier<SwerveModuleSimulation> {
     public final SimMotorConfigs driveMotorConfigs, steerMotorConfigs;
@@ -45,7 +46,8 @@ public class SwerveModuleSimulationConfig implements Supplier<SwerveModuleSimula
             Voltage steerFrictionVoltage,
             Distance wheelRadius,
             MomentOfInertia steerRotationalInertia,
-            double wheelsCoefficientOfFriction) {
+            double wheelsCoefficientOfFriction,
+            SimulatedBattery batterySource) {
         BoundingCheck.check(driveGearRatio, 4, 24, "drive gear ratio", "times reduction");
         BoundingCheck.check(steerGearRatio, 6, 50, "steer gear ratio", "times reduction");
         BoundingCheck.check(driveFrictionVoltage.in(Volts), 0.01, 0.35, "drive friction voltage", "volts");
@@ -55,10 +57,10 @@ public class SwerveModuleSimulationConfig implements Supplier<SwerveModuleSimula
                 steerRotationalInertia.in(KilogramSquareMeters), 0.005, 0.06, "steer rotation inertia", "kg * m^2");
         BoundingCheck.check(wheelsCoefficientOfFriction, 0.6, 2.5, "tire coefficient of friction", "");
 
-        this.driveMotorConfigs =
-                new SimMotorConfigs(driveMotorModel, driveGearRatio, KilogramSquareMeters.zero(), driveFrictionVoltage);
-        this.steerMotorConfigs =
-                new SimMotorConfigs(steerMotorModel, steerGearRatio, steerRotationalInertia, steerFrictionVoltage);
+        this.driveMotorConfigs = new SimMotorConfigs(
+                driveMotorModel, driveGearRatio, KilogramSquareMeters.zero(), driveFrictionVoltage, batterySource);
+        this.steerMotorConfigs = new SimMotorConfigs(
+                steerMotorModel, steerGearRatio, steerRotationalInertia, steerFrictionVoltage, batterySource);
         DRIVE_GEAR_RATIO = driveGearRatio;
         STEER_GEAR_RATIO = steerGearRatio;
         WHEELS_COEFFICIENT_OF_FRICTION = wheelsCoefficientOfFriction;

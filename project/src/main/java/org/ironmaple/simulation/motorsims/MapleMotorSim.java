@@ -41,7 +41,7 @@ public class MapleMotorSim {
         this.appliedVoltage = Volts.zero();
         this.statorCurrent = Amps.zero();
 
-        SimulatedBattery.addMotor(this);
+        configs.batterySource.addMotor(this);
     }
 
     /**
@@ -57,7 +57,7 @@ public class MapleMotorSim {
                 state.mechanismAngularVelocity,
                 state.mechanismAngularPosition.times(configs.gearing),
                 state.mechanismAngularVelocity.times(configs.gearing));
-        this.appliedVoltage = SimulatedBattery.clamp(appliedVoltage);
+        this.appliedVoltage = configs.batterySource.clamp(appliedVoltage);
         this.statorCurrent = configs.calculateCurrent(state.mechanismAngularVelocity, appliedVoltage);
         this.state.step(configs.calculateTorque(statorCurrent), configs.friction, configs.loadMOI, dt);
 
@@ -170,7 +170,7 @@ public class MapleMotorSim {
         // Hence,
         // Battery Voltage x Supply Current = Applied Voltage x Stator Current
         // Supply Current = Stator Current * Applied Voltage / Battery Voltage
-        return getStatorCurrent().times(appliedVoltage.div(SimulatedBattery.getBatteryVoltage()));
+        return getStatorCurrent().times(appliedVoltage.div(configs.batterySource.getBatteryVoltage()));
     }
 
     /**

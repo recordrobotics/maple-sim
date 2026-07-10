@@ -84,7 +84,7 @@ public class SwerveModuleSimulation {
     public SwerveModuleSimulation(SwerveModuleSimulationConfig config) {
         this.config = config;
 
-        SimulatedBattery.addElectricalAppliances(this::getDriveMotorSupplyCurrent);
+        config.driveMotorConfigs.batterySource.addElectricalAppliances(this::getDriveMotorSupplyCurrent);
         this.steerMotorSim = new MapleMotorSim(config.steerMotorConfigs);
 
         this.driveWheelFinalPositionCache = new ConcurrentLinkedQueue<>();
@@ -229,7 +229,7 @@ public class SwerveModuleSimulation {
                 getDriveEncoderUnGearedPosition(),
                 getDriveEncoderUnGearedSpeed());
 
-        driveMotorAppliedVoltage = SimulatedBattery.clamp(driveMotorAppliedVoltage);
+        driveMotorAppliedVoltage = config.driveMotorConfigs.batterySource.clamp(driveMotorAppliedVoltage);
 
         /* calculate the stator current */
         driveMotorStatorCurrent =
@@ -325,7 +325,8 @@ public class SwerveModuleSimulation {
      * @return the current supplied to the drive motor
      */
     public Current getDriveMotorSupplyCurrent() {
-        return getDriveMotorStatorCurrent().times(driveMotorAppliedVoltage.div(SimulatedBattery.getBatteryVoltage()));
+        return getDriveMotorStatorCurrent()
+                .times(driveMotorAppliedVoltage.div(config.driveMotorConfigs.batterySource.getBatteryVoltage()));
     }
 
     /**

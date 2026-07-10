@@ -28,25 +28,28 @@ import org.ironmaple.simulation.SimulatedArena;
  * current. The battery voltage is affected by the current drawn from various appliances.
  */
 public class SimulatedBattery {
+
+    public static final SimulatedBattery ROBORIO_BATTERY = new SimulatedBattery();
+
     // Nominal voltage for a fully charged battery (13.5 volts).
     private static final double DEFAULT_BATTERY_NOMINAL_VOLTAGE = 13.5;
 
     // Filter to smooth the current readings.
-    private static LinearFilter currentFilter = LinearFilter.movingAverage(50);
+    private LinearFilter currentFilter = LinearFilter.movingAverage(50);
 
-    private static final List<Supplier<Current>> electricalAppliances = new ArrayList<>();
+    private final List<Supplier<Current>> electricalAppliances = new ArrayList<>();
 
     // The current battery voltage in volts.
-    private static double currentChargeVoltage = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
-    private static double batteryVoltageVolts = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
-    private static double batteryInternalResistance = 0.02;
+    private double currentChargeVoltage = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
+    private double batteryVoltageVolts = DEFAULT_BATTERY_NOMINAL_VOLTAGE;
+    private double batteryInternalResistance = 0.02;
 
-    private static double timeOfLastVoltageLow = -1;
-    private static double voltageSagThreshold = 0.95;
-    private static Pair<Double, Double> voltageSagCoefficients = new Pair<>(1.70518, 2.81719);
+    private double timeOfLastVoltageLow = -1;
+    private double voltageSagThreshold = 0.95;
+    private Pair<Double, Double> voltageSagCoefficients = new Pair<>(1.70518, 2.81719);
 
-    private static double dischargeRate = 0.05 / 378.45; // Volts per amp-second
-    private static Pair<Double, Double> dischargeCoefficients = new Pair<>(13.48393, 1.34388);
+    private double dischargeRate = 0.05 / 378.45; // Volts per amp-second
+    private Pair<Double, Double> dischargeCoefficients = new Pair<>(13.48393, 1.34388);
 
     /**
      *
@@ -57,7 +60,7 @@ public class SimulatedBattery {
      *
      * @param filter The filter to smooth the current readings
      */
-    public static void setCurrentFilter(LinearFilter filter) {
+    public void setCurrentFilter(LinearFilter filter) {
         currentFilter = filter;
     }
 
@@ -70,7 +73,7 @@ public class SimulatedBattery {
      *
      * @param voltage The voltage to set the battery to, in volts.
      */
-    public static void setVoltage(double voltage) {
+    public void setVoltage(double voltage) {
         currentChargeVoltage = voltage;
     }
 
@@ -81,7 +84,7 @@ public class SimulatedBattery {
      *
      * @param resistance The internal resistance to set, in ohms.
      */
-    public static void setBatteryInternalResistance(double resistance) {
+    public void setBatteryInternalResistance(double resistance) {
         batteryInternalResistance = resistance;
     }
 
@@ -100,7 +103,7 @@ public class SimulatedBattery {
      *
      * @param threshold The voltage sag threshold to set.
      */
-    public static void setVoltageSagThreshold(double threshold) {
+    public void setVoltageSagThreshold(double threshold) {
         voltageSagThreshold = threshold;
     }
 
@@ -113,7 +116,7 @@ public class SimulatedBattery {
      *
      * @param coefficients The voltage sag coefficients to set.
      */
-    public static void setVoltageSagCoefficients(Pair<Double, Double> coefficients) {
+    public void setVoltageSagCoefficients(Pair<Double, Double> coefficients) {
         voltageSagCoefficients = coefficients;
     }
 
@@ -124,7 +127,7 @@ public class SimulatedBattery {
      *
      * @param rate The discharge rate to set.
      */
-    public static void setDischargeRate(double rate) {
+    public void setDischargeRate(double rate) {
         dischargeRate = rate;
     }
 
@@ -137,7 +140,7 @@ public class SimulatedBattery {
      *
      * @param coefficients The discharge coefficients to set.
      */
-    public static void setDischargeCoefficients(Pair<Double, Double> coefficients) {
+    public void setDischargeCoefficients(Pair<Double, Double> coefficients) {
         dischargeCoefficients = coefficients;
     }
 
@@ -150,7 +153,7 @@ public class SimulatedBattery {
      *
      * @param customElectricalAppliances The supplier for the current drawn by the appliance.
      */
-    public static void addElectricalAppliances(Supplier<Current> customElectricalAppliances) {
+    public void addElectricalAppliances(Supplier<Current> customElectricalAppliances) {
         electricalAppliances.add(customElectricalAppliances);
     }
 
@@ -163,7 +166,7 @@ public class SimulatedBattery {
      *
      * @param mapleMotorSim The motor simulation object.
      */
-    public static void addMotor(MapleMotorSim mapleMotorSim) {
+    public void addMotor(MapleMotorSim mapleMotorSim) {
         electricalAppliances.add(mapleMotorSim::getSupplyCurrent);
     }
 
@@ -176,7 +179,7 @@ public class SimulatedBattery {
      *
      * <p>The battery voltage is clamped to avoid going below the brownout voltage.
      */
-    public static void simulationSubTick() {
+    public void simulationSubTick() {
         double totalCurrentAmps = getTotalCurrentDrawn().in(Amps);
         double filteredTotalCurrentAmps = currentFilter.calculate(totalCurrentAmps);
 
@@ -212,13 +215,15 @@ public class SimulatedBattery {
             timeOfLastVoltageLow = Timer.getTimestamp();
         }
 
-        RoboRioSim.setVInVoltage(batteryVoltageVolts);
+        if (this == ROBORIO_BATTERY) {
+            RoboRioSim.setVInVoltage(batteryVoltageVolts);
 
-        SmartDashboard.putNumber("BatterySim/TotalCurrent (Amps)", filteredTotalCurrentAmps);
-        SmartDashboard.putNumber("BatterySim/BatteryVoltage (Volts)", batteryVoltageVolts);
+            SmartDashboard.putNumber("BatterySim/TotalCurrent (Amps)", filteredTotalCurrentAmps);
+            SmartDashboard.putNumber("BatterySim/BatteryVoltage (Volts)", batteryVoltageVolts);
+        }
     }
 
-    private static double calculateVoltageSag() {
+    private double calculateVoltageSag() {
         if (timeOfLastVoltageLow < 0) {
             return 0;
         } else {
@@ -234,7 +239,7 @@ public class SimulatedBattery {
      *
      * @return The battery voltage as a {@link Voltage} object.
      */
-    public static Voltage getBatteryVoltage() {
+    public Voltage getBatteryVoltage() {
         return Volts.of(batteryVoltageVolts);
     }
 
@@ -247,7 +252,7 @@ public class SimulatedBattery {
      *
      * @return The total current as a {@link Current} object.
      */
-    public static Current getTotalCurrentDrawn() {
+    public Current getTotalCurrentDrawn() {
         double totalCurrentAmps = electricalAppliances.stream()
                 .mapToDouble(currentSupplier -> currentSupplier.get().in(Amps))
                 .sum();
@@ -265,7 +270,7 @@ public class SimulatedBattery {
      * @param voltage The voltage to be clamped.
      * @return The clamped voltage as a {@link Voltage} object.
      */
-    public static Voltage clamp(Voltage voltage) {
+    public Voltage clamp(Voltage voltage) {
         return Volts.of(MathUtil.clamp(voltage.in(Volts), -batteryVoltageVolts, batteryVoltageVolts));
     }
 }

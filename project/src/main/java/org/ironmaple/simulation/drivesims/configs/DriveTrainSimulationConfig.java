@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+import org.ironmaple.simulation.motorsims.SimulatedBattery;
 
 /**
  *
@@ -93,7 +94,7 @@ public class DriveTrainSimulationConfig {
      *
      * @return a new instance of {@link DriveTrainSimulationConfig} with all configs set to default values.
      */
-    public static DriveTrainSimulationConfig Default() {
+    public static DriveTrainSimulationConfig Default(SimulatedBattery batterySource) {
         return new DriveTrainSimulationConfig(
                 Kilograms.of(45),
                 Meters.of(0.76),
@@ -101,7 +102,8 @@ public class DriveTrainSimulationConfig {
                 Meters.of(0.52),
                 Meters.of(0.52),
                 COTS.ofPigeon2(),
-                COTS.ofMark4(DCMotor.getFalcon500(1), DCMotor.getFalcon500(1), COTS.WHEELS.COLSONS.cof, 2));
+                COTS.ofMark4(
+                        DCMotor.getFalcon500(1), DCMotor.getFalcon500(1), COTS.WHEELS.COLSONS.cof, 2, batterySource));
     }
 
     /**

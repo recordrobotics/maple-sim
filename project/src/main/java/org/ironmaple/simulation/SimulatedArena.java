@@ -89,7 +89,7 @@ public abstract class SimulatedArena {
     public static BooleanSubscriber resetFieldSubscriber =
             resetFieldPublisher.getTopic().subscribe(false);
 
-    Boolean shouldPublishMatchBreakdown = true;
+    boolean shouldPublishMatchBreakdown = true;
 
     private static SimulatedArena instance = null;
 
@@ -212,6 +212,7 @@ public abstract class SimulatedArena {
 
     protected final World<Body> physicsWorld;
     protected final Set<AbstractDriveTrainSimulation> driveTrainSimulations;
+    protected final Set<SimulatedBattery> batterySimulations;
 
     protected final Set<GamePiece> gamePieces;
     protected final List<Simulatable> customSimulations;
@@ -234,6 +235,7 @@ public abstract class SimulatedArena {
         this.physicsWorld.setGravity(PhysicsWorld.ZERO_GRAVITY);
         for (Body obstacle : obstaclesMap.obstacles) this.physicsWorld.addBody(obstacle);
         this.driveTrainSimulations = new HashSet<>();
+        this.batterySimulations = new HashSet<>();
         customSimulations = new ArrayList<>();
         this.gamePieces = new HashSet<>();
         this.intakeSimulations = new ArrayList<>();
@@ -242,6 +244,8 @@ public abstract class SimulatedArena {
         setupValueForMatchBreakdown("Auto/AutoScore");
         resetFieldPublisher.set(false);
         matchClock.start();
+
+        addBatterySimulation(SimulatedBattery.ROBORIO_BATTERY);
     }
 
     /**
@@ -317,6 +321,17 @@ public abstract class SimulatedArena {
         this.physicsWorld.addBody(driveTrainSimulation);
 
         this.driveTrainSimulations.add(driveTrainSimulation);
+    }
+
+    /**
+     *
+     *
+     * <h2>Registers an {@link SimulatedBattery}.</h2>
+     *
+     * @param batterSimulation the battery simulation to be registered
+     */
+    public synchronized void addBatterySimulation(SimulatedBattery batterSimulation) {
+        this.batterySimulations.add(batterSimulation);
     }
 
     /**
@@ -574,7 +589,7 @@ public abstract class SimulatedArena {
      * </ul>
      */
     protected void simulationSubTick(int subTickNum) {
-        SimulatedBattery.simulationSubTick();
+        batterySimulations.forEach(SimulatedBattery::simulationSubTick);
         driveTrainSimulations.forEach(AbstractDriveTrainSimulation::simulationSubTick);
 
         GamePieceProjectile.updateGamePieceProjectiles(this, this.gamePieceLaunched());
